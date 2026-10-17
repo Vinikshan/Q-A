@@ -12,14 +12,13 @@ api_key = "${OPENAI_API_KEY:-}"
 
 
 [jac-shadcn]
-style = "nova"
+style = "vega"
 baseColor = "neutral"
-theme = "amber"
+theme = "rose"
 font = "inter"
-radius = "default"
-menuAccent = "subtle"
+radius = "medium"
+menuAccent = "bold"
 menuColor = "default"
-
 [dependencies]
 [dependencies.npm]
 react = "^18.2.0"

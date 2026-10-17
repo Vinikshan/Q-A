@@ -21,12 +21,18 @@ def:pub AccountAccess() -> JsxElement {
         message = "";
         password_confirm = "";
     }
+    def handle_forgot(e: MouseEvent) { mode = "forgot"; message = ""; }
+    def handle_back_to_login(e: MouseEvent) { mode = "login"; message = ""; }
 
     async def handle_submit(e: FormEvent) {
         e.preventDefault();
         message = "";
         if len(email.strip()) == 0 {
             message = "Enter your email address.";
+            return;
+        }
+        if mode == "forgot" {
+            message = "Password recovery email is unavailable until the site owner configures an email provider.";
             return;
         }
         if mode == "register" {
@@ -106,18 +112,20 @@ def:pub AccountAccess() -> JsxElement {
         <section className="flex min-h-screen flex-col bg-background px-6 py-8 sm:px-10">
             <Link to="/" className="flex items-center gap-2 font-semibold text-primary lg:hidden"><span className="flex size-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">Q</span> Q&amp;A Finder</Link>
             <div className="flex flex-1 items-center justify-center py-10">
-                <form onSubmit={handle_submit} className="flex w-full max-w-sm flex-col gap-6">
+                <form onSubmit={handle_submit} className="flex w-full max-w-sm flex-col gap-6 rounded-2xl border border-border/70 bg-card/60 p-6 shadow-2xl shadow-primary/5 backdrop-blur-xl animate-in fade-in slide-in-from-bottom-2 duration-500 sm:p-8">
                     <div className="flex flex-col gap-2">
-                        <h2 className="text-3xl font-semibold tracking-tight">{"Create your account" if mode == "register" else "Welcome back"}</h2>
-                        <p className="text-sm text-muted-foreground">{"Use your email to join Q&A Finder." if mode == "register" else "Sign in to continue the conversation."}</p>
+                        <h2 className="text-3xl font-semibold tracking-tight">{"Create your account" if mode == "register" else "Reset your password" if mode == "forgot" else "Welcome back"}</h2>
+                        <p className="text-sm text-muted-foreground">{"Use your email to join Q&A Finder." if mode == "register" else "Enter your account email for recovery instructions." if mode == "forgot" else "Sign in to continue the conversation."}</p>
                     </div>
                     <div className="flex flex-col gap-4">
                         <label className="flex flex-col gap-2 text-sm font-medium" htmlFor="account-email">Email address
                             <Input id="account-email" type="email" autoComplete="email" placeholder="you@example.com" value={email} onChange={handle_email} required={True} />
                         </label>
-                        <label className="flex flex-col gap-2 text-sm font-medium" htmlFor="account-password">Password
-                            <Input id="account-password" type="password" autoComplete={"new-password" if mode == "register" else "current-password"} placeholder={"8+ characters, upper/lowercase, number, symbol" if mode == "register" else "Your password"} value={password} onChange={handle_password} required={True} minLength={8} />
-                        </label>
+                        {if mode != "forgot" {
+                            <label className="flex flex-col gap-2 text-sm font-medium" htmlFor="account-password">Password
+                                <Input id="account-password" type="password" autoComplete={"new-password" if mode == "register" else "current-password"} placeholder={"8+ characters, upper/lowercase, number, symbol" if mode == "register" else "Your password"} value={password} onChange={handle_password} required={True} minLength={8} />
+                            </label>
+                        }}
                         {if mode == "register" {
                             <label className="flex flex-col gap-2 text-sm font-medium" htmlFor="account-password-confirm">Confirm password
                                 <Input id="account-password-confirm" type="password" autoComplete="new-password" placeholder="Re-enter your password" value={password_confirm} onChange={handle_password_confirm} required={True} minLength={8} />
@@ -125,12 +133,15 @@ def:pub AccountAccess() -> JsxElement {
                         }}
                     </div>
                     {if message != "" { <p role="alert" className="rounded-lg border border-destructive/30 bg-destructive/10 p-3 text-sm text-destructive">{message}</p> }}
-                    <Button type="submit" disabled={busy} className="h-11 w-full">{"Creating account..." if busy and mode == "register" else "Signing in..." if busy else "Create account" if mode == "register" else "Sign in"}</Button>
+                    <Button type="submit" disabled={busy} className="h-11 w-full">{"Creating account..." if busy and mode == "register" else "Signing in..." if busy and mode == "login" else "Send recovery instructions" if mode == "forgot" else "Create account" if mode == "register" else "Sign in"}</Button>
+                    {if mode == "login" {
+                        <button type="button" onClick={handle_forgot} className="self-center text-sm font-medium text-primary underline-offset-4 hover:underline">Forgot password?</button>
+                    }}
                     <p className="text-center text-sm text-muted-foreground">
-                        {"Already have an account? " if mode == "register" else "New to Q&A Finder? "}
-                        <button type="button" onClick={handle_mode} className="font-semibold text-primary underline-offset-4 hover:underline">{"Sign in" if mode == "register" else "Create an account"}</button>
+                        {"Already have an account? " if mode == "register" else "Remembered your password? " if mode == "forgot" else "New to Q&A Finder? "}
+                        <button type="button" onClick={handle_back_to_login if mode == "forgot" else handle_mode} className="font-semibold text-primary underline-offset-4 hover:underline">{"Sign in" if mode == "register" or mode == "forgot" else "Create an account"}</button>
                     </p>
-                    <p className="text-center text-xs leading-relaxed text-muted-foreground">Signup passwords must include uppercase and lowercase letters, a number, and a symbol. Email verification will be available after the site owner configures a mail provider. Admin access is provisioned separately.</p>
+                    {if mode == "register" { <p className="text-center text-xs leading-relaxed text-muted-foreground">Signup passwords must include uppercase and lowercase letters, a number, and a symbol. Email verification will be available after the site owner configures a mail provider. Admin access is provisioned separately.</p> }}
                 </form>
             </div>
         </section>

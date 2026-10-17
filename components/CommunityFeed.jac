@@ -73,7 +73,7 @@ def:pub CommunityFeed() -> JsxElement {
     }
 
     return <div className="min-h-screen bg-muted/40 text-foreground">
-        <header className="sticky top-0 z-20 border-b bg-background/95 shadow-sm backdrop-blur">
+        <header className="sticky top-0 z-20 border-b border-border/70 bg-background/75 shadow-lg shadow-black/10 backdrop-blur-xl">
             <div className="mx-auto flex h-16 max-w-[1400px] items-center gap-4 px-4 sm:px-6">
                 <Link to="/" className="flex shrink-0 items-center gap-2.5">
                     <span className="flex size-9 items-center justify-center rounded-xl bg-primary text-lg font-bold text-primary-foreground">Q</span>
@@ -111,14 +111,14 @@ def:pub CommunityFeed() -> JsxElement {
                     <Badge variant="secondary" className="rounded-full px-3 py-1">Community questions</Badge>
                 </div>
                 {if signed_in {
-                    <form onSubmit={handle_submit} className="mb-5 rounded-xl border bg-card p-4 shadow-sm">
+                    <form onSubmit={handle_submit} className="mb-5 rounded-xl border border-border/70 bg-card/70 p-4 shadow-lg shadow-black/10 backdrop-blur-xl transition-all duration-300 hover:border-primary/30 hover:shadow-primary/5">
                         <div className="mb-3 flex items-center gap-3"><span className="flex size-9 items-center justify-center rounded-full bg-primary/10 font-semibold text-primary">Q</span><Input value={title} onChange={handle_title} placeholder="Ask a question" aria-label="Question title" className="h-10 rounded-full bg-muted/50" /></div>
                         <div className="flex flex-col gap-3"><Input value={community} onChange={handle_community} placeholder="Topic (e.g. general)" aria-label="Topic" className="h-9" /><Textarea value={body} onChange={handle_body} placeholder="Add context or details for your question" aria-label="Question details" className="min-h-20 resize-y" /><div className="flex flex-wrap items-center justify-between gap-3"><span className="text-xs text-muted-foreground">Good questions help everyone learn.</span><Button type="submit" className="rounded-full px-5">Ask question</Button></div>{if error != "" { <p role="alert" className="text-sm text-destructive">{error}</p> }}</div>
                     </form>
                 } else {
                     <div className="mb-5 flex flex-wrap items-center justify-between gap-3 rounded-xl border bg-card p-4 shadow-sm"><p className="text-sm text-muted-foreground">Join Q&amp;A Finder to ask a question or vote on helpful answers.</p><Link to="/account"><Button className="rounded-full">Create an account</Button></Link></div>
                 }}
-                <div className="mb-3 flex items-center gap-2 rounded-xl border bg-card p-2 shadow-sm">
+                <div className="mb-3 flex items-center gap-2 rounded-xl border border-border/70 bg-card/70 p-2 shadow-md shadow-black/10 backdrop-blur-lg transition-colors duration-300">
                     <button onClick={handle_tab} className={"rounded-full px-4 py-2 text-sm font-semibold transition-colors " + ("bg-primary/10 text-primary" if active_tab == "Popular" else "text-muted-foreground hover:bg-muted")}>Popular</button>
                     <button onClick={handle_new} className={"rounded-full px-4 py-2 text-sm font-semibold transition-colors " + ("bg-primary/10 text-primary" if active_tab == "New" else "text-muted-foreground hover:bg-muted")}>New</button>
                     <span className="ml-auto hidden px-3 text-xs text-muted-foreground sm:inline">Sort by {active_tab.lower()}</span>
@@ -132,7 +132,7 @@ def:pub CommunityFeed() -> JsxElement {
                 } else {
                     <div className="flex flex-col gap-3">
                         {for post in visible_posts {
-                            <article key={jid(post)} className="group flex overflow-hidden rounded-xl border bg-card shadow-sm transition-shadow hover:shadow-md">
+                            <article key={jid(post)} className="group flex overflow-hidden rounded-xl border border-border/70 bg-card/75 shadow-md shadow-black/10 backdrop-blur-xl transition-all duration-300 hover:-translate-y-0.5 hover:border-primary/30 hover:shadow-lg hover:shadow-primary/5 animate-in fade-in slide-in-from-bottom-1">
                                 <div className="flex w-12 shrink-0 flex-col items-center gap-1 bg-muted/40 py-4 sm:w-14">
                                     {if signed_in { <button aria-label="Upvote" onClick={lambda { handle_vote(jid(post), 1); }} className="rounded p-1 text-muted-foreground transition-colors hover:bg-primary/10 hover:text-primary">▲</button> }}
                                     <span className="text-xs font-bold tabular-nums">{post.votes}</span>

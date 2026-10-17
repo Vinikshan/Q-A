@@ -6,8 +6,6 @@ node CommunityPost {
     has votes: int = 1;
     has comments: int = 0;
     has answer_count: int = 0;
-    has rating_total: int = 0;
-    has rating_count: int = 0;
     has age: str = "just now";
 }
 
@@ -96,6 +94,13 @@ def:pub get_posts() -> list[CommunityPost] {
     return posts;
 }
 
+def:pub get_post(post_id: str) -> CommunityPost | None {
+    for post in [root.shared -->][?:CommunityPost] {
+        if jid(post) == post_id { return post; }
+    }
+    return None;
+}
+
 def:priv create_post(title: str, body: str, community: str) -> CommunityPost | None {
     if len(title.strip()) == 0 or len(body.strip()) == 0 or len(title) > 180 or len(body) > 5000 or len(community.strip()) == 0 {
         return None;
@@ -134,28 +139,6 @@ def:protect create_answer(post_id: str, body: str) -> CommunityAnswer | None {
 }
 
 # Public ratings are open to visitors; browser token limits repeated votes per target.
-def:pub rate_question(post_id: str, stars: int, voter_key: str) -> CommunityPost | None {
-    if stars < 1 or stars > 5 or len(voter_key) < 16 or len(voter_key) > 100 { return None; }
-    for post in [root.shared -->][?:CommunityPost] {
-        if jid(post) == post_id {
-            existing: PublicRating | None = None;
-            for rating in [root.shared -->][?:PublicRating] {
-                if rating.target_kind == "question" and rating.target_id == post_id and rating.voter_key == voter_key { existing = rating; }
-            }
-            if existing is None {
-                root.shared ++> PublicRating(target_id=post_id, target_kind="question", voter_key=voter_key, stars=stars);
-                post.rating_total = post.rating_total + stars;
-                post.rating_count = post.rating_count + 1;
-            } elif isinstance(existing, PublicRating) {
-                post.rating_total = post.rating_total - existing.stars + stars;
-                existing.stars = stars;
-            }
-            return post;
-        }
-    }
-    return None;
-}
-
 def:pub rate_answer(answer_id: str, stars: int, voter_key: str) -> CommunityAnswer | None {
     if stars < 1 or stars > 5 or len(voter_key) < 16 or len(voter_key) > 100 { return None; }
     for answer in [root.shared -->][?:CommunityAnswer] {

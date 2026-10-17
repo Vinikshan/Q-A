@@ -7,6 +7,7 @@ import from "@jac/runtime" { jacLogin, jacSignup, useNavigate, Link }
 def:pub AccountAccess() -> JsxElement {
     has email: str = "";
     has password: str = "";
+    has password_confirm: str = "";
     has mode: str = "register";
     has message: str = "";
     has busy: bool = False;
@@ -14,16 +15,41 @@ def:pub AccountAccess() -> JsxElement {
 
     def handle_email(e: ChangeEvent) { email = e.target.value; }
     def handle_password(e: ChangeEvent) { password = e.target.value; }
+    def handle_password_confirm(e: ChangeEvent) { password_confirm = e.target.value; }
     def handle_mode(e: MouseEvent) {
         mode = "login" if mode == "register" else "register";
         message = "";
+        password_confirm = "";
     }
 
     async def handle_submit(e: FormEvent) {
         e.preventDefault();
         message = "";
-        if len(email.strip()) == 0 or len(password) < 8 {
-            message = "Enter a valid email and a password with at least 8 characters.";
+        if len(email.strip()) == 0 {
+            message = "Enter your email address.";
+            return;
+        }
+        if mode == "register" {
+            has_upper = False;
+            has_lower = False;
+            has_digit = False;
+            has_symbol = False;
+            for ch in password {
+                if ch.isupper() { has_upper = True; }
+                if ch.islower() { has_lower = True; }
+                if ch.isdigit() { has_digit = True; }
+                if not ch.isalnum() { has_symbol = True; }
+            }
+            if len(password) < 8 or not has_upper or not has_lower or not has_digit or not has_symbol {
+                message = "Use at least 8 characters with an uppercase letter, lowercase letter, number, and symbol.";
+                return;
+            }
+            if password != password_confirm {
+                message = "The passwords do not match.";
+                return;
+            }
+        } elif len(password) == 0 {
+            message = "Enter your password.";
             return;
         }
         busy = True;
@@ -90,8 +116,13 @@ def:pub AccountAccess() -> JsxElement {
                             <Input id="account-email" type="email" autoComplete="email" placeholder="you@example.com" value={email} onChange={handle_email} required={True} />
                         </label>
                         <label className="flex flex-col gap-2 text-sm font-medium" htmlFor="account-password">Password
-                            <Input id="account-password" type="password" autoComplete="new-password" placeholder="At least 8 characters" value={password} onChange={handle_password} required={True} minLength={8} />
+                            <Input id="account-password" type="password" autoComplete={"new-password" if mode == "register" else "current-password"} placeholder={"8+ characters, upper/lowercase, number, symbol" if mode == "register" else "Your password"} value={password} onChange={handle_password} required={True} minLength={8} />
                         </label>
+                        {if mode == "register" {
+                            <label className="flex flex-col gap-2 text-sm font-medium" htmlFor="account-password-confirm">Confirm password
+                                <Input id="account-password-confirm" type="password" autoComplete="new-password" placeholder="Re-enter your password" value={password_confirm} onChange={handle_password_confirm} required={True} minLength={8} />
+                            </label>
+                        }}
                     </div>
                     {if message != "" { <p role="alert" className="rounded-lg border border-destructive/30 bg-destructive/10 p-3 text-sm text-destructive">{message}</p> }}
                     <Button type="submit" disabled={busy} className="h-11 w-full">{"Creating account..." if busy and mode == "register" else "Signing in..." if busy else "Create account" if mode == "register" else "Sign in"}</Button>
@@ -99,7 +130,7 @@ def:pub AccountAccess() -> JsxElement {
                         {"Already have an account? " if mode == "register" else "New to Q&A Finder? "}
                         <button type="button" onClick={handle_mode} className="font-semibold text-primary underline-offset-4 hover:underline">{"Sign in" if mode == "register" else "Create an account"}</button>
                     </p>
-                    <p className="text-center text-xs leading-relaxed text-muted-foreground">Administrator access is provisioned separately by the site owner. Account registration never grants admin privileges.</p>
+                    <p className="text-center text-xs leading-relaxed text-muted-foreground">Signup passwords must include uppercase and lowercase letters, a number, and a symbol. Email verification will be available after the site owner configures a mail provider. Admin access is provisioned separately.</p>
                 </form>
             </div>
         </section>

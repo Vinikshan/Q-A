@@ -72,11 +72,11 @@ def:pub CommunityFeed() -> JsxElement {
         }
     }
 
-    return <div className="min-h-screen bg-muted/40 text-foreground">
-        <header className="sticky top-0 z-20 border-b border-border/70 bg-background/75 shadow-lg shadow-black/10 backdrop-blur-xl">
+    return <div className="min-h-screen bg-[radial-gradient(ellipse_at_top,rgba(16,185,129,0.12),transparent_42%),radial-gradient(ellipse_at_bottom_right,rgba(16,185,129,0.06),transparent_38%)] bg-background text-foreground">
+        <header className="sticky top-0 z-20 border-b border-primary/15 bg-background/55 shadow-lg shadow-primary/5 backdrop-blur-2xl">
             <div className="mx-auto flex h-16 max-w-[1400px] items-center gap-4 px-4 sm:px-6">
                 <Link to="/" className="flex shrink-0 items-center gap-2.5">
-                    <span className="flex size-9 items-center justify-center rounded-xl bg-primary text-lg font-bold text-primary-foreground">Q</span>
+                    <span className="flex size-9 items-center justify-center rounded-xl bg-primary text-lg font-bold text-primary-foreground shadow-lg shadow-primary/30 ring-1 ring-primary-foreground/20">Q</span>
                     <span className="text-lg font-bold tracking-tight text-primary sm:text-xl">Q&amp;A Finder</span>
                 </Link>
                 <div className="hidden h-10 flex-1 sm:block"><Input type="search" value={search_query} onChange={handle_search} placeholder="Search questions, topics, and people" aria-label="Search questions" className="h-10 w-full rounded-full bg-muted/70 px-4" /></div>
@@ -118,7 +118,7 @@ def:pub CommunityFeed() -> JsxElement {
                 } else {
                     <div className="mb-5 flex flex-wrap items-center justify-between gap-3 rounded-xl border bg-card p-4 shadow-sm"><p className="text-sm text-muted-foreground">Join Q&amp;A Finder to ask a question or vote on helpful answers.</p><Link to="/account"><Button className="rounded-full">Create an account</Button></Link></div>
                 }}
-                <div className="mb-3 flex items-center gap-2 rounded-xl border border-border/70 bg-card/70 p-2 shadow-md shadow-black/10 backdrop-blur-lg transition-colors duration-300">
+                <div className="mb-3 flex items-center gap-2 rounded-xl border border-primary/15 bg-card/55 p-2 shadow-lg shadow-black/15 backdrop-blur-xl transition-all duration-300 hover:border-primary/25">
                     <button onClick={handle_tab} className={"rounded-full px-4 py-2 text-sm font-semibold transition-colors " + ("bg-primary/10 text-primary" if active_tab == "Popular" else "text-muted-foreground hover:bg-muted")}>Popular</button>
                     <button onClick={handle_new} className={"rounded-full px-4 py-2 text-sm font-semibold transition-colors " + ("bg-primary/10 text-primary" if active_tab == "New" else "text-muted-foreground hover:bg-muted")}>New</button>
                     <span className="ml-auto hidden px-3 text-xs text-muted-foreground sm:inline">Sort by {active_tab.lower()}</span>
@@ -132,7 +132,7 @@ def:pub CommunityFeed() -> JsxElement {
                 } else {
                     <div className="flex flex-col gap-3">
                         {for post in visible_posts {
-                            <article key={jid(post)} className="group flex overflow-hidden rounded-xl border border-border/70 bg-card/75 shadow-md shadow-black/10 backdrop-blur-xl transition-all duration-300 hover:-translate-y-0.5 hover:border-primary/30 hover:shadow-lg hover:shadow-primary/5 animate-in fade-in slide-in-from-bottom-1">
+                            <article key={jid(post)} className="group flex overflow-hidden rounded-xl border border-primary/15 bg-card/65 shadow-lg shadow-black/15 backdrop-blur-xl transition-all duration-300 hover:-translate-y-0.5 hover:border-primary/35 hover:shadow-xl hover:shadow-primary/10 animate-in fade-in slide-in-from-bottom-1">
                                 <div className="flex w-12 shrink-0 flex-col items-center gap-1 bg-muted/40 py-4 sm:w-14">
                                     {if signed_in { <button aria-label="Upvote" onClick={lambda { handle_vote(jid(post), 1); }} className="rounded p-1 text-muted-foreground transition-colors hover:bg-primary/10 hover:text-primary">▲</button> }}
                                     <span className="text-xs font-bold tabular-nums">{post.votes}</span>

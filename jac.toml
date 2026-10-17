@@ -1,7 +1,7 @@
 [project]
-name = "empty"
+name = "qa-finder"
 version = "0.0.1"
-description = "Empty Jac project - start from scratch"
+description = "Q&A Finder: a community question-and-answer app"
 entry-point = "main.jac"
 kind = "web-app"
 
@@ -12,15 +12,16 @@ api_key = "${OPENAI_API_KEY:-}"
 
 
 [jac-shadcn]
-style = "vega"
-baseColor = "neutral"
-theme = "rose"
+style = "nova"
+baseColor = "zinc"
+theme = "emerald"
 font = "inter"
 radius = "medium"
-menuAccent = "bold"
+menuAccent = "subtle"
 menuColor = "default"
 [dependencies]
 [dependencies.npm]
+"@fontsource-variable/geist" = "*"
 react = "^18.2.0"
 react-dom = "^18.2.0"
 react-router-dom = "^6.22.0"
@@ -72,24 +73,28 @@ plugins = ["tailwindcss()"]
 lib_imports = ["import tailwindcss from '@tailwindcss/vite'"]
 
 [client.app_meta_data]
-title = "A blank canvas"
-description = "A minimal jac-shadcn starter with the theme wired up and nothing in the way."
-keywords = "jac, starter, shadcn, template"
-author = "Blank canvas"
-theme_color = "#dc7702"
+title = "Q&A Finder"
+description = "Ask thoughtful questions and find answers from a curious community."
+keywords = "questions, answers, community, Q&A Finder"
+author = "Q&A Finder"
+theme_color = "#10b981"
 og_type = "website"
-og_title = "A blank canvas"
-og_description = "A minimal jac-shadcn starter."
-og_site_name = "Blank canvas"
+og_title = "Q&A Finder"
+og_description = "Ask thoughtful questions and find answers from a curious community."
+og_site_name = "Q&A Finder"
 
 
 [scale]
+
+[scale.jwt]
+secret = "${JWT_SECRET:-local-development-only-change-before-deploy}"
+
 [scale.microservices]
 enabled = false
 
 [jacpack]
-name = 'reddit-clone-site'
-description = 'Jac IDE snapshot for reddit-clone-site'
+name = 'qa-finder'
+description = 'Q&A Finder community questions and answers'
 
 [jachammer]
 project_id = "prj_17634a800fef4a45b7410b1ef3ee57f0"

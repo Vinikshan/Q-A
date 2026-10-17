@@ -4,7 +4,7 @@ import from .ui.card { Card, CardContent }
 import from .ui.input { Input }
 import from .ui.textarea { Textarea }
 import from .ui.badge { Badge }
-import from "@jac/runtime" { Link }
+import from "@jac/runtime" { Link, jacIsLoggedIn, jacLogout }
 
 
 def:pub CommunityFeed() -> JsxElement {
@@ -15,6 +15,7 @@ def:pub CommunityFeed() -> JsxElement {
     has loading: bool = True;
     has error: str = "";
     has active_tab: str = "Popular";
+    signed_in = jacIsLoggedIn();
 
     async can with entry {
         try {
@@ -69,12 +70,15 @@ def:pub CommunityFeed() -> JsxElement {
         <header className="sticky top-0 z-20 border-b bg-background/95 shadow-sm backdrop-blur">
             <div className="mx-auto flex h-16 max-w-[1400px] items-center gap-4 px-4 sm:px-6">
                 <Link to="/" className="flex shrink-0 items-center gap-2.5">
-                    <span className="flex size-9 items-center justify-center rounded-full bg-primary text-lg font-bold text-primary-foreground">r</span>
-                    <span className="hidden text-xl font-bold tracking-tight sm:inline">reddit</span>
+                    <span className="flex size-9 items-center justify-center rounded-xl bg-primary text-lg font-bold text-primary-foreground">Q</span>
+                    <span className="text-lg font-bold tracking-tight text-primary sm:text-xl">Q&amp;A Finder</span>
                 </Link>
-                <div className="hidden h-9 flex-1 items-center rounded-full border bg-muted/70 px-4 text-sm text-muted-foreground sm:flex">Search communities</div>
-                <Button variant="outline" size="sm" className="ml-auto rounded-full">Log in</Button>
-                <Button size="sm" className="rounded-full">Sign up</Button>
+                <div className="hidden h-9 flex-1 items-center rounded-full border bg-muted/70 px-4 text-sm text-muted-foreground sm:flex">Search questions and communities</div>
+                {if signed_in {
+                    <div className="ml-auto flex items-center gap-2"><Button variant="outline" size="sm" onClick={lambda { jacLogout(); }}>Sign out</Button></div>
+                } else {
+                    <Link to="/account" className="ml-auto"><Button variant="outline" size="sm" className="rounded-full">Sign in</Button></Link>
+                }}
             </div>
         </header>
         <div className="mx-auto grid max-w-[1400px] grid-cols-1 gap-6 px-4 py-6 sm:px-6 lg:grid-cols-[220px_minmax(0,1fr)_300px]">
@@ -86,34 +90,27 @@ def:pub CommunityFeed() -> JsxElement {
                         <button onClick={handle_tab} className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left text-sm text-muted-foreground hover:bg-muted">↗ <span>Popular</span></button>
                     </div>
                     <div className="rounded-xl border bg-card p-3 shadow-sm">
-                        <p className="px-3 pb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">Your communities</p>
-                        <a className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm hover:bg-muted"><span className="flex size-7 items-center justify-center rounded-full bg-amber-100 text-xs font-bold text-amber-800">c</span> casualconversation</a>
-                        <a className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm hover:bg-muted"><span className="flex size-7 items-center justify-center rounded-full bg-sky-100 text-xs font-bold text-sky-800">k</span> MechanicalKeyboards</a>
-                        <a className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm hover:bg-muted"><span className="flex size-7 items-center justify-center rounded-full bg-emerald-100 text-xs font-bold text-emerald-800">b</span> books</a>
-                        <a className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm hover:bg-muted"><span className="flex size-7 items-center justify-center rounded-full bg-violet-100 text-xs font-bold text-violet-800">s</span> science</a>
+                        <p className="px-3 pb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">Explore topics</p>
+                        <a className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm hover:bg-muted"><span className="flex size-7 items-center justify-center rounded-full bg-primary/10 text-xs font-bold text-primary">c</span> Everyday questions</a>
+                        <a className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm hover:bg-muted"><span className="flex size-7 items-center justify-center rounded-full bg-primary/10 text-xs font-bold text-primary">t</span> Technology</a>
+                        <a className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm hover:bg-muted"><span className="flex size-7 items-center justify-center rounded-full bg-primary/10 text-xs font-bold text-primary">b</span> Books &amp; learning</a>
+                        <a className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm hover:bg-muted"><span className="flex size-7 items-center justify-center rounded-full bg-primary/10 text-xs font-bold text-primary">s</span> Science</a>
                     </div>
                 </div>
             </aside>
             <main className="min-w-0">
                 <div className="mb-5 flex flex-wrap items-end justify-between gap-3">
-                    <div><h1 className="text-2xl font-semibold tracking-tight">Good afternoon</h1><p className="mt-1 text-sm text-muted-foreground">The internet, gathered in one place.</p></div>
-                    <Badge variant="secondary" className="rounded-full px-3 py-1">Front page</Badge>
+                    <div><h1 className="text-2xl font-semibold tracking-tight text-primary">Q&amp;A Finder</h1><p className="mt-1 text-sm text-muted-foreground">Ask thoughtful questions. Find answers from people who know.</p></div>
+                    <Badge variant="secondary" className="rounded-full px-3 py-1">Community questions</Badge>
                 </div>
-                <form onSubmit={handle_submit} className="mb-5 rounded-xl border bg-card p-4 shadow-sm">
-                    <div className="mb-3 flex items-center gap-3">
-                        <span className="flex size-9 items-center justify-center rounded-full bg-primary/10 font-semibold text-primary">Y</span>
-                        <Input value={title} onChange={handle_title} placeholder="Create a post" aria-label="Post title" className="h-10 rounded-full bg-muted/50" />
-                    </div>
-                    <div className="flex flex-col gap-3">
-                        <Input value={community} onChange={handle_community} placeholder="Community (e.g. general)" aria-label="Community" className="h-9" />
-                        <Textarea value={body} onChange={handle_body} placeholder="What would you like to share?" aria-label="Post text" className="min-h-20 resize-y" />
-                        <div className="flex flex-wrap items-center justify-between gap-3">
-                            <span className="text-xs text-muted-foreground">Share something worth discussing.</span>
-                            <Button type="submit" className="rounded-full px-5">Post</Button>
-                        </div>
-                        {if error != "" { <p role="alert" className="text-sm text-destructive">{error}</p> }}
-                    </div>
-                </form>
+                {if signed_in {
+                    <form onSubmit={handle_submit} className="mb-5 rounded-xl border bg-card p-4 shadow-sm">
+                        <div className="mb-3 flex items-center gap-3"><span className="flex size-9 items-center justify-center rounded-full bg-primary/10 font-semibold text-primary">Q</span><Input value={title} onChange={handle_title} placeholder="Ask a question" aria-label="Question title" className="h-10 rounded-full bg-muted/50" /></div>
+                        <div className="flex flex-col gap-3"><Input value={community} onChange={handle_community} placeholder="Topic (e.g. general)" aria-label="Topic" className="h-9" /><Textarea value={body} onChange={handle_body} placeholder="Add context or details for your question" aria-label="Question details" className="min-h-20 resize-y" /><div className="flex flex-wrap items-center justify-between gap-3"><span className="text-xs text-muted-foreground">Good questions help everyone learn.</span><Button type="submit" className="rounded-full px-5">Ask question</Button></div>{if error != "" { <p role="alert" className="text-sm text-destructive">{error}</p> }}</div>
+                    </form>
+                } else {
+                    <div className="mb-5 flex flex-wrap items-center justify-between gap-3 rounded-xl border bg-card p-4 shadow-sm"><p className="text-sm text-muted-foreground">Join Q&amp;A Finder to ask a question or vote on helpful answers.</p><Link to="/account"><Button className="rounded-full">Create an account</Button></Link></div>
+                }}
                 <div className="mb-3 flex items-center gap-2 rounded-xl border bg-card p-2 shadow-sm">
                     <button onClick={handle_tab} className={"rounded-full px-4 py-2 text-sm font-semibold transition-colors " + ("bg-primary/10 text-primary" if active_tab == "Popular" else "text-muted-foreground hover:bg-muted")}>Popular</button>
                     <button onClick={handle_new} className={"rounded-full px-4 py-2 text-sm font-semibold transition-colors " + ("bg-primary/10 text-primary" if active_tab == "New" else "text-muted-foreground hover:bg-muted")}>New</button>
@@ -157,8 +154,8 @@ def:pub CommunityFeed() -> JsxElement {
                         <CardContent className="-mt-5 p-4">
                             <div className="mb-3 flex size-10 items-center justify-center rounded-full border-4 border-card bg-primary text-lg font-bold text-primary-foreground">r</div>
                             <h2 className="font-semibold">Home</h2>
-                            <p className="mt-2 text-sm leading-relaxed text-muted-foreground">Reddit is a place to discover communities, share what you love, and join the conversation.</p>
-                            <Button className="mt-4 w-full rounded-full">Create a post</Button>
+                            <p className="mt-2 text-sm leading-relaxed text-muted-foreground">Explore useful answers, share what you know, and help others learn.</p>
+                            <Link to="/account"><Button className="mt-4 w-full rounded-full">Join Q&amp;A Finder</Button></Link>
                         </CardContent>
                     </Card>
                     <div className="rounded-xl border bg-card p-4 text-xs leading-relaxed text-muted-foreground shadow-sm">About · Careers · Press · Terms · Privacy<br /><span className="mt-2 inline-block">Reddit, Inc. © 2025</span></div>

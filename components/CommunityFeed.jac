@@ -4,7 +4,9 @@ import from .ui.card { Card, CardContent }
 import from .ui.input { Input }
 import from .ui.textarea { Textarea }
 import from .ui.badge { Badge }
+import from .AnswerThread { AnswerThread }
 import from "@jac/runtime" { Link, jacIsLoggedIn, jacLogout }
+
 
 
 def:pub CommunityFeed() -> JsxElement {
@@ -127,20 +129,18 @@ def:pub CommunityFeed() -> JsxElement {
                         {for post in posts {
                             <article key={jid(post)} className="group flex overflow-hidden rounded-xl border bg-card shadow-sm transition-shadow hover:shadow-md">
                                 <div className="flex w-12 shrink-0 flex-col items-center gap-1 bg-muted/40 py-4 sm:w-14">
-                                    <button aria-label="Upvote" onClick={lambda { handle_vote(jid(post), 1); }} className="rounded p-1 text-muted-foreground transition-colors hover:bg-primary/10 hover:text-primary">▲</button>
+                                    {if signed_in { <button aria-label="Upvote" onClick={lambda { handle_vote(jid(post), 1); }} className="rounded p-1 text-muted-foreground transition-colors hover:bg-primary/10 hover:text-primary">▲</button> }}
                                     <span className="text-xs font-bold tabular-nums">{post.votes}</span>
-                                    <button aria-label="Downvote" onClick={lambda { handle_vote(jid(post), -1); }} className="rounded p-1 text-muted-foreground transition-colors hover:bg-primary/10 hover:text-primary">▼</button>
+                                    {if signed_in { <button aria-label="Downvote" onClick={lambda { handle_vote(jid(post), -1); }} className="rounded p-1 text-muted-foreground transition-colors hover:bg-primary/10 hover:text-primary">▼</button> }}
                                 </div>
                                 <div className="min-w-0 flex-1 p-4 sm:p-5">
                                     <div className="mb-2 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-muted-foreground">
-                                        <span className="font-semibold text-foreground">/Q/{post.community}</span><span>·</span><span>Asked by {post.author}</span><span>{post.age}</span>
+                                        <span className="font-semibold text-foreground">Q/{post.community}</span><span>·</span><span>Asked by {post.author}</span><span>{post.age}</span>
                                     </div>
                                     <h2 className="text-lg font-semibold leading-snug tracking-tight">{post.title}</h2>
                                     <p className="mt-2 line-clamp-3 text-sm leading-relaxed text-muted-foreground">{post.body}</p>
-                                    <div className="mt-4 flex items-center gap-2">
-                                        <Button variant="secondary" size="sm" className="rounded-full text-xs">{str(post.comments)} comments</Button>
-                                        <Button variant="ghost" size="sm" className="rounded-full text-xs text-muted-foreground">Share</Button>
-                                    </div>
+                                    <AnswerThread post_id={jid(post)} signed_in={signed_in} />
+                                    <Button variant="ghost" size="sm" className="mt-2 w-fit rounded-full text-xs text-muted-foreground">Share</Button>
                                 </div>
                             </article>
                         }}

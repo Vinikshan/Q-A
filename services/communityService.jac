@@ -8,6 +8,13 @@ node CommunityPost {
     has age: str = "just now";
 }
 
+node CommunityAnswer {
+    has post_id: str = "";
+    has body: str = "";
+    has author: str = "Community member";
+    has age: str = "just now";
+}
+
 def:pub get_posts() -> list[CommunityPost] {
     posts = [root.shared -->][?:CommunityPost];
     if len(posts) == 0 {
@@ -23,7 +30,7 @@ def:priv create_post(title: str, body: str, community: str) -> CommunityPost | N
     if len(title.strip()) == 0 or len(body.strip()) == 0 or len(title) > 180 or len(body) > 5000 or len(community.strip()) == 0 {
         return None;
     }
-    return root.shared ++> CommunityPost(title=title.strip(), body=body.strip(), community=community.strip(), author="you", votes=1, comments=0, age="just now");
+    return root.shared ++> CommunityPost(title=title.strip(), body=body.strip(), community=community.strip(), author="Community member", votes=1, comments=0, age="just now");
 }
 
 def:priv vote_post(post_id: str, direction: int) -> CommunityPost | None {
@@ -35,4 +42,19 @@ def:priv vote_post(post_id: str, direction: int) -> CommunityPost | None {
         }
     }
     return None;
+}
+
+def:pub get_answers(post_id: str) -> list[CommunityAnswer] {
+    return [answer for answer in [root.shared -->][?:CommunityAnswer] if answer.post_id == post_id];
+}
+
+def:protect create_answer(post_id: str, body: str) -> CommunityAnswer | None {
+    if len(body.strip()) == 0 or len(body) > 5000 { return None; }
+    found = False;
+    for post in [root.shared -->][?:CommunityPost] {
+        if jid(post) == post_id { found = True; }
+    }
+    if not found { return None; }
+    answer = root.shared ++> CommunityAnswer(post_id=post_id, body=body.strip(), author="Community member", age="just now");
+    return answer;
 }

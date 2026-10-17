@@ -1,4 +1,4 @@
-import from services.communityService { CommunityPost, get_posts, create_post, vote_post }
+import from services.communityService { CommunityPost, CommunityAnswer, get_posts, create_post, vote_post, get_answers, create_answer }
 
 import ".styles.global.css";
 import from "@jac/runtime" { Router, Routes, Route }

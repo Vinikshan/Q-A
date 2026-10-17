@@ -2,7 +2,7 @@ node CommunityPost {
     has title: str = "";
     has body: str = "";
     has community: str = "general";
-    has author: str = "Redditor";
+    has author: str = "Community member";
     has votes: int = 1;
     has comments: int = 0;
     has age: str = "just now";

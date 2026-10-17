@@ -133,7 +133,7 @@ def:pub CommunityFeed() -> JsxElement {
                                 </div>
                                 <div className="min-w-0 flex-1 p-4 sm:p-5">
                                     <div className="mb-2 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-muted-foreground">
-                                        <span className="font-semibold text-foreground">r/{post.community}</span><span>·</span><span>Posted by u/{post.author}</span><span>{post.age}</span>
+                                        <span className="font-semibold text-foreground">/Q/{post.community}</span><span>·</span><span>Asked by {post.author}</span><span>{post.age}</span>
                                     </div>
                                     <h2 className="text-lg font-semibold leading-snug tracking-tight">{post.title}</h2>
                                     <p className="mt-2 line-clamp-3 text-sm leading-relaxed text-muted-foreground">{post.body}</p>
@@ -152,13 +152,13 @@ def:pub CommunityFeed() -> JsxElement {
                     <Card className="overflow-hidden shadow-sm">
                         <div className="h-20 bg-primary/15" />
                         <CardContent className="-mt-5 p-4">
-                            <div className="mb-3 flex size-10 items-center justify-center rounded-full border-4 border-card bg-primary text-lg font-bold text-primary-foreground">r</div>
+                            <div className="mb-3 flex size-10 items-center justify-center rounded-xl border-4 border-card bg-primary text-lg font-bold text-primary-foreground">Q</div>
                             <h2 className="font-semibold">Home</h2>
                             <p className="mt-2 text-sm leading-relaxed text-muted-foreground">Explore useful answers, share what you know, and help others learn.</p>
                             <Link to="/account"><Button className="mt-4 w-full rounded-full">Join Q&amp;A Finder</Button></Link>
                         </CardContent>
                     </Card>
-                    <div className="rounded-xl border bg-card p-4 text-xs leading-relaxed text-muted-foreground shadow-sm">About · Careers · Press · Terms · Privacy<br /><span className="mt-2 inline-block">Reddit, Inc. © 2025</span></div>
+                    <div className="rounded-xl border bg-card p-4 text-xs leading-relaxed text-muted-foreground shadow-sm">About · Careers · Press · Terms · Privacy<br /><span className="mt-2 inline-block">ANS, Inc. © 2025</span></div>
                 </div>
             </aside>
         </div>

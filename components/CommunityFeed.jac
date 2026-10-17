@@ -17,7 +17,10 @@ def:pub CommunityFeed() -> JsxElement {
     has loading: bool = True;
     has error: str = "";
     has active_tab: str = "Popular";
+    has search_query: str = "";
     signed_in = jacIsLoggedIn();
+    query = search_query.strip().lower();
+    visible_posts = [post for post in posts if query == "" or query in post.title.lower() or query in post.body.lower() or query in post.community.lower() or query in post.author.lower()];
 
     async can with entry {
         try {
@@ -34,6 +37,7 @@ def:pub CommunityFeed() -> JsxElement {
     def handle_community(e: ChangeEvent) { community = e.target.value; }
     def handle_tab(e: MouseEvent) { active_tab = "Popular"; }
     def handle_new(e: MouseEvent) { active_tab = "New"; }
+    def handle_search(e: ChangeEvent) { search_query = e.target.value; }
 
     async def handle_submit(e: FormEvent) -> None {
         e.preventDefault();
@@ -75,13 +79,14 @@ def:pub CommunityFeed() -> JsxElement {
                     <span className="flex size-9 items-center justify-center rounded-xl bg-primary text-lg font-bold text-primary-foreground">Q</span>
                     <span className="text-lg font-bold tracking-tight text-primary sm:text-xl">Q&amp;A Finder</span>
                 </Link>
-                <div className="hidden h-9 flex-1 items-center rounded-full border bg-muted/70 px-4 text-sm text-muted-foreground sm:flex">Search questions and communities</div>
+                <div className="hidden h-10 flex-1 sm:block"><Input type="search" value={search_query} onChange={handle_search} placeholder="Search questions, topics, and people" aria-label="Search questions" className="h-10 w-full rounded-full bg-muted/70 px-4" /></div>
                 {if signed_in {
                     <div className="ml-auto flex items-center gap-2"><Button variant="outline" size="sm" onClick={lambda { jacLogout(); }}>Sign out</Button></div>
                 } else {
                     <Link to="/account" className="ml-auto"><Button variant="outline" size="sm" className="rounded-full">Sign in</Button></Link>
                 }}
             </div>
+            <div className="px-4 pb-3 sm:hidden"><Input type="search" value={search_query} onChange={handle_search} placeholder="Search questions, topics, and people" aria-label="Search questions" className="h-10 w-full rounded-full bg-muted/70 px-4" /></div>
         </header>
         <div className="mx-auto grid max-w-[1400px] grid-cols-1 gap-6 px-4 py-6 sm:px-6 lg:grid-cols-[220px_minmax(0,1fr)_300px]">
             <aside className="hidden lg:block">
@@ -122,11 +127,11 @@ def:pub CommunityFeed() -> JsxElement {
                     <div className="flex flex-col gap-3"><div className="h-40 animate-pulse rounded-xl border bg-card" /><div className="h-40 animate-pulse rounded-xl border bg-card" /><div className="h-40 animate-pulse rounded-xl border bg-card" /></div>
                 } elif error != "" and len(posts) == 0 {
                     <Card className="shadow-sm"><CardContent className="p-8 text-center"><p className="font-medium">The feed is unavailable</p><p className="mt-1 text-sm text-muted-foreground">{error}</p></CardContent></Card>
-                } elif len(posts) == 0 {
-                    <Card className="shadow-sm"><CardContent className="p-10 text-center"><p className="text-lg font-semibold">It’s quiet around here</p><p className="mt-2 text-sm text-muted-foreground">Start the conversation with the first post.</p></CardContent></Card>
+                } elif len(visible_posts) == 0 {
+                    <Card className="shadow-sm"><CardContent className="p-10 text-center"><p className="text-lg font-semibold">{ "No matching questions" if query != "" else "It’s quiet around here" }</p><p className="mt-2 text-sm text-muted-foreground">{ "Try another search term or clear your search." if query != "" else "Start the conversation with the first question." }</p></CardContent></Card>
                 } else {
                     <div className="flex flex-col gap-3">
-                        {for post in posts {
+                        {for post in visible_posts {
                             <article key={jid(post)} className="group flex overflow-hidden rounded-xl border bg-card shadow-sm transition-shadow hover:shadow-md">
                                 <div className="flex w-12 shrink-0 flex-col items-center gap-1 bg-muted/40 py-4 sm:w-14">
                                     {if signed_in { <button aria-label="Upvote" onClick={lambda { handle_vote(jid(post), 1); }} className="rounded p-1 text-muted-foreground transition-colors hover:bg-primary/10 hover:text-primary">▲</button> }}

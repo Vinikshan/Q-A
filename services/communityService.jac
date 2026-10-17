@@ -5,6 +5,9 @@ node CommunityPost {
     has author: str = "Community member";
     has votes: int = 1;
     has comments: int = 0;
+    has answer_count: int = 0;
+    has rating_total: int = 0;
+    has rating_count: int = 0;
     has age: str = "just now";
 }
 
@@ -12,7 +15,16 @@ node CommunityAnswer {
     has post_id: str = "";
     has body: str = "";
     has author: str = "Community member";
+    has rating_total: int = 0;
+    has rating_count: int = 0;
     has age: str = "just now";
+}
+
+node PublicRating {
+    has target_id: str = "";
+    has target_kind: str = "question";
+    has voter_key: str = "";
+    has stars: int = 0;
 }
 
 def:pub get_posts() -> list[CommunityPost] {
@@ -74,8 +86,12 @@ def:pub get_posts() -> list[CommunityPost] {
         for (index, seed) in enumerate(seeds) {
             post = root.shared ++> CommunityPost(title=seed[1], body=seed[2], community=seed[0], author="Q&A Finder community", votes=1 + (len(seeds) - index) * 3, comments=0, age="Community pick");
             root.shared ++> CommunityAnswer(post_id=jid(post), body=seed[3], author="Q&A Finder contributor", age="Community answer");
+            post.answer_count = 1;
         }
         posts = [root.shared -->][?:CommunityPost];
+    }
+    for post in posts {
+        post.answer_count = len([answer for answer in [root.shared -->][?:CommunityAnswer] if answer.post_id == jid(post)]);
     }
     return posts;
 }
@@ -104,11 +120,60 @@ def:pub get_answers(post_id: str) -> list[CommunityAnswer] {
 
 def:protect create_answer(post_id: str, body: str) -> CommunityAnswer | None {
     if len(body.strip()) == 0 or len(body) > 5000 { return None; }
-    found = False;
-    for post in [root.shared -->][?:CommunityPost] {
-        if jid(post) == post_id { found = True; }
+    post: CommunityPost | None = None;
+    for candidate in [root.shared -->][?:CommunityPost] {
+        if jid(candidate) == post_id { post = candidate; }
     }
-    if not found { return None; }
-    answer = root.shared ++> CommunityAnswer(post_id=post_id, body=body.strip(), author="Community member", age="just now");
-    return answer;
+    if post is None { return None; }
+    if isinstance(post, CommunityPost) {
+        answer = root.shared ++> CommunityAnswer(post_id=post_id, body=body.strip(), author="Community member", age="just now");
+        post.answer_count = post.answer_count + 1;
+        return answer;
+    }
+    return None;
+}
+
+# Public ratings are open to visitors; browser token limits repeated votes per target.
+def:pub rate_question(post_id: str, stars: int, voter_key: str) -> CommunityPost | None {
+    if stars < 1 or stars > 5 or len(voter_key) < 16 or len(voter_key) > 100 { return None; }
+    for post in [root.shared -->][?:CommunityPost] {
+        if jid(post) == post_id {
+            existing: PublicRating | None = None;
+            for rating in [root.shared -->][?:PublicRating] {
+                if rating.target_kind == "question" and rating.target_id == post_id and rating.voter_key == voter_key { existing = rating; }
+            }
+            if existing is None {
+                root.shared ++> PublicRating(target_id=post_id, target_kind="question", voter_key=voter_key, stars=stars);
+                post.rating_total = post.rating_total + stars;
+                post.rating_count = post.rating_count + 1;
+            } elif isinstance(existing, PublicRating) {
+                post.rating_total = post.rating_total - existing.stars + stars;
+                existing.stars = stars;
+            }
+            return post;
+        }
+    }
+    return None;
+}
+
+def:pub rate_answer(answer_id: str, stars: int, voter_key: str) -> CommunityAnswer | None {
+    if stars < 1 or stars > 5 or len(voter_key) < 16 or len(voter_key) > 100 { return None; }
+    for answer in [root.shared -->][?:CommunityAnswer] {
+        if jid(answer) == answer_id {
+            existing: PublicRating | None = None;
+            for rating in [root.shared -->][?:PublicRating] {
+                if rating.target_kind == "answer" and rating.target_id == answer_id and rating.voter_key == voter_key { existing = rating; }
+            }
+            if existing is None {
+                root.shared ++> PublicRating(target_id=answer_id, target_kind="answer", voter_key=voter_key, stars=stars);
+                answer.rating_total = answer.rating_total + stars;
+                answer.rating_count = answer.rating_count + 1;
+            } elif isinstance(existing, PublicRating) {
+                answer.rating_total = answer.rating_total - existing.stars + stars;
+                existing.stars = stars;
+            }
+            return answer;
+        }
+    }
+    return None;
 }

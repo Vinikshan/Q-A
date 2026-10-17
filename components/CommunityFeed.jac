@@ -1,4 +1,4 @@
-sv import from ..services.communityService { CommunityPost, get_posts, create_post, vote_post }
+sv import from ..services.communityService { CommunityPost, get_posts, create_post, vote_post, rate_question }
 import from .ui.button { Button }
 import from .ui.card { Card, CardContent }
 import from .ui.input { Input }
@@ -8,6 +8,10 @@ import from .AnswerThread { AnswerThread }
 import from "@jac/runtime" { Link, jacIsLoggedIn, jacLogout }
 
 
+
+def post_popularity(post: CommunityPost) -> int {
+    return post.answer_count * 100000 + post.rating_total * 100 + post.votes;
+}
 
 def:pub CommunityFeed() -> JsxElement {
     has posts: list[CommunityPost] = [];
@@ -20,11 +24,18 @@ def:pub CommunityFeed() -> JsxElement {
     has search_query: str = "";
     signed_in = jacIsLoggedIn();
     query = search_query.strip().lower();
+    voter_key = localStorage.getItem("qa-finder-rater") or "";
     visible_posts = [post for post in posts if query == "" or query in post.title.lower() or query in post.body.lower() or query in post.community.lower() or query in post.author.lower()];
+    if active_tab == "Popular" {
+        visible_posts = sorted(visible_posts, key=post_popularity, reverse=True);
+    } else {
+        visible_posts = [post for post in reversed(visible_posts)];
+    }
 
     async can with entry {
         try {
             posts = await get_posts();
+            active_tab = "Popular";
             loading = False;
         } except Exception {
             error = "The community feed could not load.";
@@ -38,6 +49,19 @@ def:pub CommunityFeed() -> JsxElement {
     def handle_tab(e: MouseEvent) { active_tab = "Popular"; }
     def handle_new(e: MouseEvent) { active_tab = "New"; }
     def handle_search(e: ChangeEvent) { search_query = e.target.value; }
+
+    async def handle_question_rating(post_id: str, stars: int) {
+        if len(voter_key) < 16 {
+            voter_key = str(new(Date).getTime()) + "-" + str(Math.random()) + "-qa-rating-key";
+            localStorage.setItem("qa-finder-rater", voter_key);
+        }
+        try {
+            updated = await rate_question(post_id, stars, voter_key);
+            if updated is not None { posts = [updated if jid(post) == post_id else post for post in posts]; }
+        } except Exception {
+            error = "Your rating could not be saved.";
+        }
+    }
 
     async def handle_submit(e: FormEvent) -> None {
         e.preventDefault();
@@ -144,6 +168,7 @@ def:pub CommunityFeed() -> JsxElement {
                                     </div>
                                     <h2 className="text-lg font-semibold leading-snug tracking-tight">{post.title}</h2>
                                     <p className="mt-2 line-clamp-3 text-sm leading-relaxed text-muted-foreground">{post.body}</p>
+                                    <div className="mt-3 flex flex-wrap items-center gap-2"><span className="text-xs text-muted-foreground">{str(round(post.rating_total / post.rating_count, 1)) if post.rating_count > 0 else "Not rated yet"}</span><span className="text-xs text-muted-foreground">({str(post.rating_count)})</span><div className="flex items-center" aria-label="Rate this question from one to five stars">{for star in [1, 2, 3, 4, 5] { <button key={str(star)} type="button" aria-label={"Rate question " + str(star) + " stars"} onClick={lambda { handle_question_rating(jid(post), star); }} className="rounded px-0.5 text-lg leading-none text-primary transition-transform duration-150 hover:scale-125">★</button> }}</div></div>
                                     <AnswerThread post_id={jid(post)} signed_in={signed_in} />
                                     <Button variant="ghost" size="sm" className="mt-2 w-fit rounded-full text-xs text-muted-foreground">Share</Button>
                                 </div>

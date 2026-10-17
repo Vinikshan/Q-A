@@ -141,7 +141,7 @@ def:pub AccountAccess() -> JsxElement {
                         {"Already have an account? " if mode == "register" else "Remembered your password? " if mode == "forgot" else "New to Q&A Finder? "}
                         <button type="button" onClick={handle_back_to_login if mode == "forgot" else handle_mode} className="font-semibold text-primary underline-offset-4 hover:underline">{"Sign in" if mode == "register" or mode == "forgot" else "Create an account"}</button>
                     </p>
-                    {if mode == "register" { <p className="text-center text-xs leading-relaxed text-muted-foreground">Signup passwords must include uppercase and lowercase letters, a number, and a symbol. Email verification will be available after the site owner configures a mail provider. Admin access is provisioned separately.</p> }}
+                    {if mode == "register" { <p className="text-center text-xs leading-relaxed text-muted-foreground">Signup passwords must include uppercase and lowercase letters, a number, and a symbol. Admin access is provisioned separately.</p> }}
                 </form>
             </div>
         </section>
